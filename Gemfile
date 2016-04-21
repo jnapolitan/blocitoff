@@ -46,6 +46,7 @@ group :development, :test do
   gem 'better_errors'
   gem 'factory_girl_rails', "~> 4.0"
   gem 'capybara'
+  gem 'faker'
 
 end
 

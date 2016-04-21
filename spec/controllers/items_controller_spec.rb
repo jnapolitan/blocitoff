@@ -52,7 +52,6 @@ RSpec.describe ItemsController, type: :controller do
       it "redirects to the users show view" do
         post :create, user_id: user.id, item: {name: RandomData.random_sentence, user_id: user.id}
         expect(response).to redirect_to(user)
-        puts user
       end
     end
   end
