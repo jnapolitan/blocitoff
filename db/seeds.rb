@@ -8,6 +8,10 @@ require 'random_data'
   )
 end
 
+# Create Julian
+me = User.create!(email: 'julian.napolitan@gmail.com', password: 'adidas02')
+me.confirm!
+
 users = User.all
 
 # Create items
@@ -20,6 +24,7 @@ end
 
 items = Item.all
 
+# Prove it
 puts "Seed finished"
 puts "#{User.count} users created"
 puts "#{Item.count} items created"

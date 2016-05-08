@@ -1,5 +1,10 @@
+<%= content_tag :div, class: 'media', id: "item-#{item.id}" do %>
   <div class="media">
     <div class="media-body">
-      <p><%= item.name %></p>
+      <% if user_is_authorized_for_item?(item) %>
+       <%= link_to "", [item.user, item], method: :delete, class: 'glyphicon glyphicon-ok', remote: true %>&nbsp;
+      <% end %>
+      <%= item.name %>
     </div>
   </div>
+<% end %>

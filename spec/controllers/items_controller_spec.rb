@@ -3,11 +3,12 @@ require 'random_data'
 require 'devise'
 
 RSpec.describe ItemsController, type: :controller do
-  let(:item) { create(:item, user: user) }
   let(:user) { create(:user) }
+  let(:other_user) { create(:user) }
+  let(:item) { create(:item, user: user) }
 
 
-  context "user not signed in" do
+  context "guest" do
     describe "GET new" do
       it "returns http redirect" do
         get :new, user_id: user.id
@@ -21,12 +22,17 @@ RSpec.describe ItemsController, type: :controller do
         expect(response).to redirect_to(new_user_session_path)
       end
     end
+
+    describe "DELETE destroy" do
+      it "redirects to new user session" do
+        delete :destroy, format: :js, user_id: user.id, id: item.id
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
   end
 
-  context "signed in user" do
+  context "signed in user doing CRUD on items they own" do
     before do
-      @request.env["devise.mapping"] = Devise.mappings[:user]
-      user = FactoryGirl.create(:user)
       user.confirm!
       sign_in user
     end
@@ -52,6 +58,41 @@ RSpec.describe ItemsController, type: :controller do
       it "redirects to the users show view" do
         post :create, user_id: user.id, item: {name: RandomData.random_sentence, user_id: user.id}
         expect(response).to redirect_to(user)
+      end
+
+      it "increases the number of Item by 1" do
+        expect{ post :create, user_id: user.id, item: {name: RandomData.random_sentence} }.to change(Item,:count).by(1)
+      end
+
+      it "assigns the new item to @item" do
+        post :create, user_id: user.id, item: {name: RandomData.random_sentence, user_id: user.id}
+        expect(assigns(:item)).to eq Item.last
+      end
+    end
+
+    describe "DELETE destroy" do
+      it "deletes the item" do
+        delete :destroy, format: :js, user_id: user.id, id: item.id
+        count = Item.where({id: item.id}).count
+        expect(count).to eq 0
+      end
+
+      it "returns http success" do
+        delete :destroy, format: :js, user_id: user.id, id: item.id
+        expect(response).to have_http_status(:success)
+      end
+    end
+  end
+
+  context "signed in user doing CRUD on items they don't own" do
+    before do
+      sign_in user
+    end
+
+    describe "DELETE destroy" do
+      it "is unauthorized" do
+        delete :destroy, format: :js, user_id: other_user.id, id: item.id
+        expect(response).to have_http_status(:unauthorized)
       end
     end
   end
